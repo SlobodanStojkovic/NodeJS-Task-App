@@ -73,7 +73,7 @@ MongoClient.connect(
       }); */
 
     //UPDATE ENTRY, change name on item with this ObjectId
-    db.collection("users")
+    /* db.collection("users")
       .updateOne(
         {
           _id: new ObjectId("627f838ad51708c7ed6ff5e2"),
@@ -124,6 +124,30 @@ MongoClient.connect(
           },
         }
       )
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        console.log(error);
+      }); */
+
+    //DELETE multiple items with same criteria > age: 37 in this case
+    db.collection("users")
+      .deleteMany({
+        age: 37,
+      })
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    //DELETE single item
+    db.collection("tasks")
+      .deleteOne({
+        description: "Buy food",
+      })
       .then((result) => {
         console.log(result);
       })
