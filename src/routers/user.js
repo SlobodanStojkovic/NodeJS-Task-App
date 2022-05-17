@@ -58,25 +58,8 @@ router.get("/users/me", auth, async (req, res) => {
   res.send(req.user);
 });
 
-//READ USER
-router.get("/users/:id", async (req, res) => {
-  const _id = req.params.id;
-
-  try {
-    const user = User.findById(_id);
-
-    if (!user) {
-      return res.status(404).send();
-    }
-
-    res.send(user);
-  } catch (error) {
-    res.status(500).send();
-  }
-});
-
-//UPDATE USER, to update someone in body we need to send json data with {"name": "Updated name value"}
-router.patch("/users/:id", async (req, res) => {
+//UPDATE OUR PROFILE
+router.patch("/users/me", auth, async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["name", "email", "password", "age"];
 
@@ -90,32 +73,26 @@ router.patch("/users/:id", async (req, res) => {
   }
   //new to return new updated value, runValidators to do validations for updated values
   try {
-    const user = await User.findById(req.params.id);
     updates.forEach((update) => {
-      user[update] = req.body[update];
+      req.user[update] = req.body[update];
     });
-    await user.save();
+    await req.user.save();
 
-    if (!user) {
+    if (!req.user) {
       return res.status(404).send();
     }
 
-    res.send(user);
+    res.send(req.user);
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
 //DELETE USER
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/me", auth, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if (!user) {
-      return res.status(404).send();
-    }
-
-    res.send(user);
+    await req.user.remove();
+    res.send(req.user);
   } catch (error) {
     res.status(500).send();
   }
