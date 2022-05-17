@@ -51,6 +51,17 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
+//toJSON method hides this data that we deleted when user data is converted to JSON
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+};
+
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, "secretKeyForToken");
