@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const sharp = require("sharp");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
 const router = new express.Router();
@@ -89,12 +91,85 @@ router.patch("/users/me", auth, async (req, res) => {
 });
 
 //DELETE USER
-router.delete("/users/me", auth, async (req, res) => {
+router.delete(
+  "/users/me",
+  auth,
+  async (req, res) => {
+    try {
+      await req.user.remove();
+      res.send(req.user);
+    } catch (error) {
+      res.status(500).send();
+    }
+  },
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
+
+// Upload Avatar image
+const upload = multer({
+  limits: {
+    fileSize: 1048576, // value is in bytes = 1 Mb
+  },
+  //cb callback
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(
+        new Error(
+          "Image must be of JPG or PNG type and with size lesser than 1 Mb"
+        )
+      );
+    }
+
+    //if there is no error, we will accept upload >> true
+    cb(undefined, true);
+  },
+});
+
+router.post(
+  "/users/me/avatar",
+  auth,
+  upload.single("avatar"),
+  async (req, res) => {
+    // sharp is used to to convert large images in common formats to smaller, web-friendly JPEG, PNG, WebP, GIF and AVIF images of varying dimensions
+    const buffer = await sharp(req.file.buffer)
+      .resize({ width: 250, height: 250 })
+      .png()
+      .toBuffer();
+
+    req.user.avatar = buffer;
+    await req.user.save();
+
+    res.send();
+  },
+  //this code runs when error happens
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
+
+// Delete avatar
+router.delete("/users/me/avatar", auth, async (req, res) => {
+  req.user.avatar = undefined;
+  await req.user.save();
+
+  res.send();
+});
+
+// Read user avatar
+router.get("./users/:id/avatar", async (req, res) => {
   try {
-    await req.user.remove();
-    res.send(req.user);
+    const user = await User.findById(req.params.id);
+
+    if (!user || !user.avatar) {
+      throw new Error("No user or user avatar found");
+    }
+
+    res.set("Content-Type", "image/png");
+    res.send(user.avatar);
   } catch (error) {
-    res.status(500).send();
+    res.status(404).send();
   }
 });
 
