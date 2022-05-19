@@ -1,6 +1,7 @@
 const express = require("express");
 const Task = require("../models/task");
 const auth = require("../middleware/auth");
+const { populate } = require("../models/task");
 const router = new express.Router();
 
 //CREATE TASKS
@@ -18,11 +19,43 @@ router.post("/tasks", auth, async (req, res) => {
   }
 });
 
-//READ TASKS
+//READ TASKS at /tasks    // at /tasks?completed= true get only completed tasks
+// GET /tasks?completed=true
+// GET /tasks?limit=10&skip=20
+// GET /tasks?sortBy=createdAt:desc
 router.get("/tasks", auth, async (req, res) => {
+  // Basics of the needed options for populate
+  const populateOptions = {
+    path: "tasks",
+    options: { sort: { createdAt: 1 } },
+  };
+
+  // Only add match criteria if supplied
+  if (req.query.completed) {
+    populateOptions.match = {};
+    populateOptions.match.completed = req.query.completed === "true";
+  }
+
+  // Only add the sort data if it is supplied
+  if (req.query.sortBy) {
+    const parts = req.query.sortBy.split(":");
+    populateOptions.options.sort = {};
+    populateOptions.options.sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+  }
+
+  // Only add the limit if a value is provided
+  if (req.query.limit) {
+    populateOptions.options.limit === parseInt(req.query.limit, 10);
+  }
+
+  // Only add the skip if a value is provided
+  if (req.query.skip) {
+    populateOptions.options.skip = parseInt(req.query.skip, 10);
+  }
+
   try {
-    const tasks = await Task.find({ owner: req.user._id });
-    res.send(tasks);
+    await req.user.populate([populateOptions]);
+    res.send(req.user.tasks);
   } catch (error) {
     res.status(500).send();
   }
