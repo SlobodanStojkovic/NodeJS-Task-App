@@ -3,10 +3,7 @@
 /* 
 const emailService = require("emailService");
 
-const emailsAPIKey = "";
-
-emailsAPIKey.setApiKey(emailsAPIKey);
-*/
+emailsAPIKey.setApiKey(process.env.SEND_EMAILS_API_KEY);
 
 const sendWelcomeEmail = (email, name) => {
   emailService.send({
@@ -31,3 +28,4 @@ module.exports = {
   sendWelcomeEmail,
   sendCancelationEmail,
 };
+ */

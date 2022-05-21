@@ -3,7 +3,7 @@ const multer = require("multer");
 const sharp = require("sharp");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
-const { sendWelcomeEmail, sendCancelationEmail } = require("../emails/account");
+// const { sendWelcomeEmail, sendCancelationEmail } = require("../emails/account");
 const router = new express.Router();
 
 //CREATE USER - SIGN UP
