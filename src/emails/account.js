@@ -1,5 +1,6 @@
 //also we need to npm install library for sending emails depending the service we choose and require it here
 // replace email service with selected library and adjust code for it
+//require('dotenv').config()
 /* 
 const emailService = require("emailService");
 
