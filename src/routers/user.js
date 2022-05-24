@@ -1,5 +1,4 @@
-const dotenv = require("dotenv");
-dotenv.config();
+/* const dotenv = require("dotenv").config(); */
 const express = require("express");
 const multer = require("multer");
 const sharp = require("sharp");
